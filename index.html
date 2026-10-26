@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mariana, Henrique e Elena — Kart</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #1b1d24;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, sans-serif;
+    }
+    /* O canvas tem tamanho fixo de "mundo" (960x600) e o CSS só o estica
+       para caber na janela, mantendo a proporção. */
+    canvas {
+      max-width: 100vw;
+      max-height: 100vh;
+      aspect-ratio: 960 / 600;
+      background: #000;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="tela" width="960" height="600"></canvas>
+
+  <!-- Scripts comuns (sem "type=module"), para o jogo abrir direto do
+       arquivo, sem servidor. A ordem importa: cada arquivo usa o anterior. -->
+  <script src="js/entrada.js"></script>
+  <script src="js/kart.js"></script>
+  <script src="js/jogo.js"></script>
+</body>
+</html>
