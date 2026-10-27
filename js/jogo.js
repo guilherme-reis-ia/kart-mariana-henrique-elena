@@ -13,6 +13,7 @@ const LARGURA = tela.width;
 const ALTURA = tela.height;
 
 Entrada.iniciar();
+Progresso.carregar();
 
 // O que o jogador escolheu nos menus (telas.js).
 const escolha = {
@@ -38,6 +39,7 @@ function novaCorrida() {
     dadosPista: escolha.pista,
     jogador: escolha.personagem,
     dificuldade: escolha.dificuldade,
+    aoTerminar: aoTerminarCorrida,
   });
 }
 
@@ -63,7 +65,7 @@ function quadro(agora) {
 function atualizar(dt) {
   if (cena instanceof Corrida) {
     if (Entrada.tocou('KeyC')) mostrarSetores = !mostrarSetores;
-    if (Entrada.tocou('KeyR') || (cena.estado === 'resultado' && Entrada.tocou('Enter'))) {
+    if (Entrada.tocou('KeyR')) {
       irPara(novaCorrida());
     } else if (Entrada.tocou('Escape')) {
       irPara(Telas.fase());

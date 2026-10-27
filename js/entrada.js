@@ -52,6 +52,7 @@ const Entrada = {
       frear: this.apertada('ArrowDown', 'KeyS'),
       esquerda: this.apertada('ArrowLeft', 'KeyA'),
       direita: this.apertada('ArrowRight', 'KeyD'),
+      drift: this.apertada('Space'),
     };
   },
 };

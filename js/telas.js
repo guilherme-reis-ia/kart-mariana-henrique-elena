@@ -108,28 +108,89 @@ const Telas = {
   },
 
   fase() {
+    const bloqueada = (dados) => !Progresso.liberada(PISTAS.indexOf(dados));
+    const atual = PISTAS.indexOf(escolha.pista);
     return telaDeEscolha({
       titulo: 'Escolha a fase',
       itens: PISTAS,
-      inicial: Math.max(0, PISTAS.indexOf(escolha.pista)),
+      inicial: Progresso.liberada(atual) ? atual : 0,
       alturaCartao: 260,
+      bloqueado: bloqueada,
       aoEscolher(p) { escolha.pista = p; irPara(novaCorrida()); },
       aoVoltar() { irPara(Telas.dificuldade()); },
       desenharItem(ctx, dados, x, y, w) {
+        const numero = PISTAS.indexOf(dados) + 1;
         desenharMiniatura(ctx, Pista.obter(dados), x + 20, y + 20, w - 40, 160);
         ctx.textAlign = 'center';
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 20px system-ui, sans-serif';
-        ctx.fillText(`${PISTAS.indexOf(dados) + 1}. ${dados.nome}`, x + w / 2, y + 220);
+        ctx.fillText(`${numero}. ${dados.nome}`, x + w / 2, y + 220);
+        if (bloqueada(dados)) {
+          ctx.fillStyle = 'rgba(10, 12, 20, 0.75)';
+          ctx.fillRect(x + 20, y + 20, w - 40, 160);
+          desenharCadeado(ctx, x + w / 2, y + 85);
+          ctx.fillStyle = '#ddd';
+          ctx.font = '14px system-ui, sans-serif';
+          ctx.fillText(`Chegue em 1º ou 2º na fase ${numero - 1}`, x + w / 2, y + 150);
+        }
       },
     });
   },
 };
 
+// Para liberar a próxima fase é preciso vencer ou chegar em 2º. Com só três
+// karts, "pódio" (top 3) seria qualquer resultado, então usamos top 2.
+const POSICAO_PARA_LIBERAR = 2;
+
+// Chamado pela Corrida quando aparece a tela de resultado: decide a
+// mensagem, libera a próxima fase e monta as opções do menu.
+function aoTerminarCorrida(corrida) {
+  const posicao = corrida.posicaoDe(corrida.jogador);
+  const indice = PISTAS.indexOf(escolha.pista);
+  const proxima = PISTAS[indice + 1];
+  const opcoes = [];
+  let mensagem;
+
+  if (posicao <= POSICAO_PARA_LIBERAR) {
+    if (proxima) {
+      const nova = Progresso.liberarAte(indice + 2);
+      mensagem = nova ? `Parabéns! Fase ${indice + 2} liberada!` : `Você chegou em ${posicao}º!`;
+      opcoes.push({ texto: 'Próxima fase', acao: () => { escolha.pista = proxima; irPara(novaCorrida()); } });
+    } else {
+      mensagem = posicao === 1 ? 'Você venceu a última fase! Que corrida!' : 'Você terminou a última fase no pódio!';
+    }
+  } else {
+    mensagem = proxima && !Progresso.liberada(indice + 1)
+      ? `Chegue em 1º ou 2º para liberar a fase ${indice + 2}.`
+      : 'Não foi dessa vez. Tente de novo!';
+    if (proxima && Progresso.liberada(indice + 1)) {
+      opcoes.push({ texto: 'Próxima fase', acao: () => { escolha.pista = proxima; irPara(novaCorrida()); } });
+    }
+  }
+  opcoes.push(
+    { texto: 'Correr de novo', acao: () => irPara(novaCorrida()) },
+    { texto: 'Escolher fase', acao: () => irPara(Telas.fase()) },
+    { texto: 'Menu inicial', acao: () => irPara(Telas.inicial()) },
+  );
+  return { mensagem, opcoes };
+}
+
+function desenharCadeado(ctx, x, y) {
+  ctx.strokeStyle = '#ffd60a';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.arc(x, y - 6, 14, Math.PI, 0);
+  ctx.stroke();
+  ctx.fillStyle = '#ffd60a';
+  ctx.fillRect(x - 20, y - 6, 40, 32);
+  ctx.fillStyle = '#14161c';
+  ctx.fillRect(x - 3, y + 4, 6, 12);
+}
+
 // Tela genérica de "escolha um entre vários cartões", usada por
 // personagem, dificuldade e fase. Quem chama diz o que desenhar em cada
 // cartão e o que fazer ao escolher ou voltar.
-function telaDeEscolha({ titulo, itens, inicial = 0, alturaCartao, desenharItem, aoEscolher, aoVoltar }) {
+function telaDeEscolha({ titulo, itens, inicial = 0, alturaCartao, desenharItem, aoEscolher, aoVoltar, bloqueado = () => false }) {
   let selecionado = Math.max(0, inicial);
   let t = 0;
   return {
@@ -138,7 +199,9 @@ function telaDeEscolha({ titulo, itens, inicial = 0, alturaCartao, desenharItem,
       const n = itens.length;
       if (Entrada.tocou('ArrowLeft', 'KeyA')) selecionado = (selecionado - 1 + n) % n;
       if (Entrada.tocou('ArrowRight', 'KeyD')) selecionado = (selecionado + 1) % n;
-      if (Entrada.tocou('Enter', 'Space')) aoEscolher(itens[selecionado]);
+      if (Entrada.tocou('Enter', 'Space')) {
+        if (!bloqueado(itens[selecionado])) aoEscolher(itens[selecionado]);
+      }
       else if (Entrada.tocou('Escape')) aoVoltar();
     },
     desenhar(ctx, w, h) {

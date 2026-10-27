@@ -24,6 +24,17 @@ class Pista {
     }
     this.comprimento = s;
 
+    // Para cada obstáculo calculamos também onde ele fica "em termos de
+    // pista": a distância desde a largada (s), o lado (positivo = à direita
+    // de quem corre) e a direção da pista ali. A IA usa s e lado para
+    // desviar; a placa de turbo usa a direção para se alinhar.
+    this.obstaculos = (dados.obstaculos || []).map((o) => {
+      const p = this.maisProximo(o.x, o.y);
+      const angulo = this.pontoEm(p.s).angulo;
+      const lado = (o.x - p.x) * -Math.sin(angulo) + (o.y - p.y) * Math.cos(angulo);
+      return { ...o, s: p.s, lado, angulo };
+    });
+
     this.criarImagem();
   }
 
@@ -115,6 +126,15 @@ class Pista {
     const info = this.maisProximo(kart.x, kart.y);
     kart.naGrama = info.distancia > this.largura / 2;
 
+    // Obstáculos são círculos: o kart está em cima se a distância entre os
+    // centros for menor que o raio do obstáculo.
+    for (const o of this.obstaculos) {
+      if (Math.hypot(kart.x - o.x, kart.y - o.y) > o.raio) continue;
+      if (o.tipo === 'grama') kart.naGrama = true;
+      else if (o.tipo === 'oleo') kart.pisarNoOleo();
+      else if (o.tipo === 'turbo') kart.pegarTurbo();
+    }
+
     const limite = this.largura / 2 + this.borda - Kart.RAIO;
     if (info.distancia > limite) {
       // n = vetor de tamanho 1 que aponta do centro da pista para o kart,
@@ -205,6 +225,8 @@ class Pista {
       }
     }
     c.restore();
+
+    for (const o of this.obstaculos) desenharObstaculo(c, o, sorteio);
   }
 
   desenhar(ctx) {
@@ -245,6 +267,53 @@ Pista.obter = function (dados) {
   if (!Pista.prontas.has(dados)) Pista.prontas.set(dados, new Pista(dados));
   return Pista.prontas.get(dados);
 };
+
+function desenharObstaculo(c, o, sorteio) {
+  c.save();
+  c.translate(o.x, o.y);
+  if (o.tipo === 'grama') {
+    c.fillStyle = '#5cae4f';
+    c.beginPath();
+    c.arc(0, 0, o.raio, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = '#3f8f3a';
+    for (let k = 0; k < 14; k++) {
+      const ang = sorteio() * Math.PI * 2, r = sorteio() * (o.raio - 6);
+      c.fillRect(Math.cos(ang) * r, Math.sin(ang) * r, 3, 7);
+    }
+  } else if (o.tipo === 'oleo') {
+    c.fillStyle = '#16161c';
+    c.beginPath();
+    c.ellipse(0, 0, o.raio, o.raio * 0.8, 0.6, 0, Math.PI * 2);
+    c.ellipse(o.raio * 0.5, o.raio * 0.4, o.raio * 0.55, o.raio * 0.45, 0, 0, Math.PI * 2);
+    c.fill();
+    // Brilho "furta-cor" típico de óleo.
+    c.strokeStyle = 'rgba(160, 120, 255, 0.45)';
+    c.lineWidth = 3;
+    c.beginPath();
+    c.ellipse(-o.raio * 0.2, -o.raio * 0.2, o.raio * 0.45, o.raio * 0.25, 0.6, 0, Math.PI * 1.2);
+    c.stroke();
+  } else if (o.tipo === 'turbo') {
+    c.rotate(o.angulo);
+    const comp = o.raio * 2, larg = o.raio * 1.5;
+    c.fillStyle = '#ff9f1c';
+    c.fillRect(-comp / 2, -larg / 2, comp, larg);
+    c.strokeStyle = '#ffd60a';
+    c.lineWidth = 3;
+    c.strokeRect(-comp / 2, -larg / 2, comp, larg);
+    // Setas apontando no sentido da corrida.
+    c.fillStyle = '#fff';
+    for (const dx of [-comp / 4, comp / 6]) {
+      c.beginPath();
+      c.moveTo(dx - 6, -larg / 3);
+      c.lineTo(dx + 8, 0);
+      c.lineTo(dx - 6, larg / 3);
+      c.lineTo(dx - 1, 0);
+      c.fill();
+    }
+  }
+  c.restore();
+}
 
 // Gerador de números "aleatórios" previsível (mulberry32): a mesma semente
 // sempre produz a mesma sequência. Math.random() não permite isso.

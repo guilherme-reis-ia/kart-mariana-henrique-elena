@@ -4,7 +4,11 @@
 const TOTAL_VOLTAS = 3;
 
 class Corrida {
-  constructor({ dadosPista, jogador, dificuldade }) {
+  // aoTerminar(corrida) é chamado quando a tela de resultado aparece e
+  // devolve { mensagem, opcoes: [{ texto, acao }] } — quem decide o que
+  // vem depois (liberar fase, ir para o menu...) é o telas.js.
+  constructor({ dadosPista, jogador, dificuldade, aoTerminar }) {
+    this.aoTerminar = aoTerminar;
     this.pista = Pista.obter(dadosPista);
     const p = this.pista;
 
@@ -46,6 +50,8 @@ class Corrida {
   }
 
   atualizar(dt) {
+    if (this.estado === 'resultado') this.escolherNoResultado();
+
     if (this.estado === 'contagem') {
       this.contagem -= dt;
       if (this.contagem <= 0) this.estado = 'correndo';
@@ -74,9 +80,21 @@ class Corrida {
 
     if (this.estado === 'correndo' && this.jogador.tempoFinal !== null) {
       this.esperaResultado -= dt;
-      if (this.esperaResultado <= 0) this.estado = 'resultado';
+      if (this.esperaResultado <= 0) {
+        this.estado = 'resultado';
+        this.final = this.aoTerminar(this);
+        this.opcaoEscolhida = 0;
+      }
     }
     this.atualizarCamera(dt);
+  }
+
+  // Menu da tela de resultado: ↑ ↓ escolhe, Enter confirma.
+  escolherNoResultado() {
+    const n = this.final.opcoes.length;
+    if (Entrada.tocou('ArrowUp', 'KeyW')) this.opcaoEscolhida = (this.opcaoEscolhida - 1 + n) % n;
+    if (Entrada.tocou('ArrowDown', 'KeyS')) this.opcaoEscolhida = (this.opcaoEscolhida + 1) % n;
+    if (Entrada.tocou('Enter', 'Space')) this.final.opcoes[this.opcaoEscolhida].acao();
   }
 
   // Contagem de voltas à prova de atalhos.
@@ -223,38 +241,45 @@ class Corrida {
   }
 
   desenharResultado(ctx, largura, altura) {
-    ctx.fillStyle = 'rgba(10, 12, 20, 0.82)';
+    ctx.fillStyle = 'rgba(10, 12, 20, 0.85)';
     ctx.fillRect(0, 0, largura, altura);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ffd60a';
     ctx.font = 'bold 44px system-ui, sans-serif';
-    ctx.fillText('Resultado', largura / 2, 110);
+    ctx.fillText('Resultado', largura / 2, 64);
+    ctx.fillStyle = '#fff';
+    ctx.font = '22px system-ui, sans-serif';
+    ctx.fillText(this.final.mensagem, largura / 2, 114);
 
     // A tabela é atualizada ao vivo: quem ainda não chegou aparece
     // como "correndo…" até cruzar a linha.
     this.classificacao.forEach((k, i) => {
-      const y = 200 + i * 64;
+      const y = 180 + i * 58;
       ctx.fillStyle = k === this.jogador ? 'rgba(255, 214, 10, 0.18)' : 'rgba(255, 255, 255, 0.06)';
-      ctx.fillRect(largura / 2 - 260, y - 26, 520, 52);
+      ctx.fillRect(largura / 2 - 260, y - 24, 520, 48);
       ctx.fillStyle = k.cor;
       ctx.beginPath();
       ctx.arc(largura / 2 - 160, y, 12, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 28px system-ui, sans-serif';
+      ctx.font = 'bold 26px system-ui, sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText(`${i + 1}º`, largura / 2 - 240, y);
       ctx.fillText(k.nome, largura / 2 - 135, y);
       ctx.textAlign = 'right';
-      ctx.font = '24px system-ui, sans-serif';
+      ctx.font = '22px system-ui, sans-serif';
       ctx.fillText(k.tempoFinal !== null ? formatarTempo(k.tempoFinal) : 'correndo…', largura / 2 + 240, y);
     });
 
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-    ctx.font = '20px system-ui, sans-serif';
-    ctx.fillText('Enter: correr de novo  ·  Esc: escolher fase', largura / 2, altura - 70);
+    this.final.opcoes.forEach((opcao, i) => {
+      const y = 380 + i * 44;
+      const sel = i === this.opcaoEscolhida;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = sel ? '#ffd60a' : 'rgba(255, 255, 255, 0.7)';
+      ctx.font = `${sel ? 'bold ' : ''}24px system-ui, sans-serif`;
+      ctx.fillText(sel ? `▶  ${opcao.texto}  ◀` : opcao.texto, largura / 2, y);
+    });
   }
 }
 
