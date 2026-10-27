@@ -22,7 +22,7 @@ const PERSONAGENS = [
     inicial: 'H',
     cor: '#3a86ff',
     destaque: 'Aceleração',
-    fisica: { velocidadeMaxima: 360, aceleracao: 560, giro: 3.0, aderencia: 9 },
+    fisica: { velocidadeMaxima: 363, aceleracao: 560, giro: 3.05, aderencia: 9 },
     notas: { Velocidade: 3, 'Aceleração': 5, Curvas: 3 },
   },
   {

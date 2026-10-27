@@ -21,7 +21,7 @@ const DIFICULDADES = {
   },
   dificil: {
     nome: 'Difícil',
-    ritmo: 1.03,
+    ritmo: 1.0,
     margemCurva: 0.95,
     imprecisao: 8,
     chanceErro: 0.04,
@@ -75,13 +75,14 @@ class PilotoIA {
     const lateral = (kart.x - info.x) * -Math.sin(aqui) + (kart.y - info.y) * Math.cos(aqui);
 
     // O rumo desejado junta duas coisas:
-    //  - a direção da pista um pouco à frente (mais à frente quanto mais
-    //    rápido), para começar a virar antes da curva;
+    //  - a direção da pista logo à frente, para começar a virar um pouco
+    //    antes da curva (olhar longe demais faz a IA "cortar" por dentro e
+    //    passar por cima do óleo — testamos: 0,25 × v pegava 20× mais óleo);
     //  - uma correção proporcional à distância até o desvio desejado:
     //    longe dele, aponta mais para o lado; perto, quase reto.
     //    Dividir pela velocidade evita zigue-zague quando ela está rápida.
-    const rumo = pista.pontoEm(info.s + 20 + v * 0.25).angulo +
-      Math.atan((2.5 * (desvio - lateral)) / (v + 60));
+    const rumo = pista.pontoEm(info.s + 20 + v * 0.1).angulo +
+      Math.atan((4 * (desvio - lateral)) / (v + 60));
     const erroDirecao = diferencaAngulo(kart.angulo, rumo);
 
     // --- Destravar ------------------------------------------------------
