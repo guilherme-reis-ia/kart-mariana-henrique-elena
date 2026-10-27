@@ -3,8 +3,9 @@
 // A IA não "trapaceia": ela produz os mesmos comandos que o teclado
 // (acelerar, frear, esquerda, direita) e o kart dela obedece à mesma física.
 // A cada quadro ela responde a duas perguntas:
-//   1. Para onde virar?  Mira num ponto do traçado um pouco à frente,
-//                        desviando de óleo e grama (e buscando turbos).
+//   1. Para onde virar?  Segue a direção da pista, mantendo-se na faixa
+//                        que escolheu, desviando de óleo e grama (e
+//                        buscando turbos).
 //   2. Quão rápido ir?   Olha as curvas que vêm aí e freia a tempo.
 
 // O que muda entre as dificuldades é só o comportamento dos adversários.
@@ -60,17 +61,28 @@ class PilotoIA {
     const v = kart.velocidade;
 
     // --- 1. Para onde virar ---------------------------------------------
-    // Quanto mais rápido, mais longe ela olha (como uma pessoa faria).
-    // O alvo é deslocado para o lado preferido, mais uma oscilação lenta
-    // que imita a imprecisão de um piloto humano.
-    const olhar = 50 + v * 0.35;
+    // "desvio" = a quantos pixels do centro da pista ela QUER andar
+    // (positivo = à direita). Começa no lado preferido, mais uma oscilação
+    // lenta que imita a imprecisão de um piloto humano (menor em pista
+    // estreita), e depois é ajustado para fugir de óleo e grama.
+    const imprecisao = this.d.imprecisao * Math.min(1, pista.largura / 180);
     let desvio = this.faixa * pista.largura * 0.2 +
-      Math.sin(this.tempo * 0.7 + this.fase) * this.d.imprecisao;
+      Math.sin(this.tempo * 0.7 + this.fase) * imprecisao;
     desvio = this.ajustarParaObstaculos(desvio, kart, pista, info);
-    const alvo = pista.pontoEm(info.s + olhar);
-    const tx = alvo.x - Math.sin(alvo.angulo) * desvio;
-    const ty = alvo.y + Math.cos(alvo.angulo) * desvio;
-    const erroDirecao = diferencaAngulo(kart.angulo, Math.atan2(ty - kart.y, tx - kart.x));
+
+    // "lateral" = a quantos pixels do centro ela ESTÁ agora.
+    const aqui = pista.pontoEm(info.s).angulo;
+    const lateral = (kart.x - info.x) * -Math.sin(aqui) + (kart.y - info.y) * Math.cos(aqui);
+
+    // O rumo desejado junta duas coisas:
+    //  - a direção da pista um pouco à frente (mais à frente quanto mais
+    //    rápido), para começar a virar antes da curva;
+    //  - uma correção proporcional à distância até o desvio desejado:
+    //    longe dele, aponta mais para o lado; perto, quase reto.
+    //    Dividir pela velocidade evita zigue-zague quando ela está rápida.
+    const rumo = pista.pontoEm(info.s + 20 + v * 0.25).angulo +
+      Math.atan((2.5 * (desvio - lateral)) / (v + 60));
+    const erroDirecao = diferencaAngulo(kart.angulo, rumo);
 
     // --- Destravar ------------------------------------------------------
     // Se ficou quase parado por um tempo (preso no muro ou em outro kart),
@@ -125,16 +137,20 @@ class PilotoIA {
     };
   }
 
-  // Olha os obstáculos dos próximos ~280 px de pista. Se o caminho
-  // planejado (desvio) passa por cima de óleo ou grama, empurra o desvio
-  // para o lado com mais espaço. Se for um turbo (e a dificuldade manda),
-  // mira nele.
+  // Olha os obstáculos dos próximos ~400 px de pista (e um pouco atrás,
+  // até o kart passar inteiro). Se o caminho planejado (desvio) passa por
+  // cima de óleo ou grama, empurra o desvio para o lado com mais espaço.
+  // Se for um turbo (e a dificuldade manda), mira nele.
   ajustarParaObstaculos(desvio, kart, pista, info) {
     const meia = pista.largura / 2 - Kart.RAIO - 4;
+    const L = pista.comprimento;
     for (const o of pista.obstaculos) {
+      // Distância até o obstáculo ao longo da pista, entre -L/2 e L/2
+      // (a pista é circular: o obstáculo pode estar "depois da linha").
       let frente = o.s - info.s;
-      if (frente < 0) frente += pista.comprimento; // obstáculo depois da linha
-      if (frente > 280) continue;
+      if (frente < -L / 2) frente += L;
+      if (frente > L / 2) frente -= L;
+      if (frente < -30 || frente > 400) continue;
 
       const chave = `${kart.volta}:${o.s}`;
       if (!this.decisoes.has(chave)) {

@@ -133,6 +133,8 @@ class Kart {
 
   pisarNoOleo() {
     if (this.tempoOleo > 0) return;
+    this.vx *= 0.6; // perde 40% da velocidade na hora
+    this.vy *= 0.6;
     this.tempoOleo = Kart.DURACAO_OLEO;
     this.giroOleo = (Math.random() < 0.5 ? -1 : 1) * (2.2 + Math.random() * 0.8);
   }

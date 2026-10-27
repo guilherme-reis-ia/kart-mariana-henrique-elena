@@ -43,15 +43,17 @@ const PISTAS = [
     setores: 16,
     // Zigue-zague com três "grampos" (meias-voltas fechadas, raio 140)
     // e uma grande curva à esquerda para voltar à largada.
+    // Perto das curvas os pontos ficam mais juntos (~150 px): um salto
+    // grande no espaçamento logo depois de uma curva entorta a suavização.
     pontos: [
-      [600, 250], [1100, 250], [1600, 250], [2000, 250],     // reta de cima →
-      [2099, 291], [2140, 390], [2099, 489],                 // grampo 1
-      [2000, 530], [1600, 530], [1200, 530], [1000, 530],    // reta ←
-      [901, 571], [860, 670], [901, 769],                    // grampo 2
-      [1000, 810], [1400, 810], [1800, 810], [2000, 810],    // reta →
-      [2099, 851], [2140, 950], [2099, 1049],                // grampo 3
-      [2000, 1090], [1500, 1090], [1000, 1090], [600, 1090], // reta de baixo ←
-      [303, 987], [180, 670], [303, 353],                    // curvão da esquerda
+      [600, 250], [1100, 250], [1550, 250], [1850, 250], [2000, 250], // reta de cima →
+      [2099, 291], [2140, 390], [2099, 489],                          // grampo 1
+      [2000, 530], [1850, 530], [1550, 530], [1150, 530], [1000, 530], // reta ←
+      [901, 571], [860, 670], [901, 769],                             // grampo 2
+      [1000, 810], [1150, 810], [1450, 810], [1850, 810], [2000, 810], // reta →
+      [2099, 851], [2140, 950], [2099, 1049],                         // grampo 3
+      [2000, 1090], [1850, 1090], [1500, 1090], [1000, 1090], [600, 1090], // reta de baixo ←
+      [303, 987], [180, 670], [303, 353],                             // curvão da esquerda
     ],
     obstaculos: [
       // Grama no lado de dentro de cada grampo: castiga quem corta a curva.
