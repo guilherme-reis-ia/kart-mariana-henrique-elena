@@ -124,6 +124,7 @@ class Pista {
   //    e cancelamos a parte da velocidade que apontava para fora do muro.
   colidir(kart) {
     const info = this.maisProximo(kart.x, kart.y);
+    info.batida = 0; // força da batida no muro neste quadro (usada pelo som)
     kart.naGrama = info.distancia > this.largura / 2;
 
     // Obstáculos são círculos: o kart está em cima se a distância entre os
@@ -145,6 +146,7 @@ class Pista {
       kart.y = info.y + ny * limite;
       const paraFora = kart.vx * nx + kart.vy * ny;
       if (paraFora > 0) {
+        info.batida = paraFora;
         // Tira a parte "para fora" e devolve 30% dela como quique;
         // o resto da velocidade (rente ao muro) perde um pouco pelo atrito.
         kart.vx = (kart.vx - 1.3 * paraFora * nx) * 0.85;

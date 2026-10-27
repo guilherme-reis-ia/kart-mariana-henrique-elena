@@ -12,7 +12,7 @@ const Telas = {
     return {
       atualizar(dt) {
         t += dt;
-        if (Entrada.tocou('Enter', 'Space')) irPara(Telas.personagem());
+        if (Entrada.tocou('Enter', 'Space')) { Som.menu(); irPara(Telas.personagem()); }
       },
       desenhar(ctx, w, h) {
         fundoDeMenu(ctx, w, h, t);
@@ -35,7 +35,7 @@ const Telas = {
         }
         ctx.font = '16px system-ui, sans-serif';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.fillText('Setas ou WASD: dirigir  ·  R: reiniciar corrida  ·  Esc: voltar', w / 2, 410);
+        ctx.fillText('Setas ou WASD: dirigir  ·  Espaço: drift  ·  P: pausa  ·  M: som', w / 2, 410);
       },
     };
   },
@@ -197,10 +197,15 @@ function telaDeEscolha({ titulo, itens, inicial = 0, alturaCartao, desenharItem,
     atualizar(dt) {
       t += dt;
       const n = itens.length;
-      if (Entrada.tocou('ArrowLeft', 'KeyA')) selecionado = (selecionado - 1 + n) % n;
-      if (Entrada.tocou('ArrowRight', 'KeyD')) selecionado = (selecionado + 1) % n;
+      if (Entrada.tocou('ArrowLeft', 'KeyA')) { selecionado = (selecionado - 1 + n) % n; Som.menu(); }
+      if (Entrada.tocou('ArrowRight', 'KeyD')) { selecionado = (selecionado + 1) % n; Som.menu(); }
       if (Entrada.tocou('Enter', 'Space')) {
-        if (!bloqueado(itens[selecionado])) aoEscolher(itens[selecionado]);
+        if (bloqueado(itens[selecionado])) {
+          Som.batida(); // "não pode"
+        } else {
+          Som.menu();
+          aoEscolher(itens[selecionado]);
+        }
       }
       else if (Entrada.tocou('Escape')) aoVoltar();
     },

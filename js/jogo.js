@@ -63,13 +63,17 @@ function quadro(agora) {
 }
 
 function atualizar(dt) {
+  if (Entrada.tocou('KeyM')) Som.alternar();
   if (cena instanceof Corrida) {
     if (Entrada.tocou('KeyC')) mostrarSetores = !mostrarSetores;
+    if (Entrada.tocou('KeyP') && cena.estado !== 'resultado') cena.pausada = !cena.pausada;
     if (Entrada.tocou('KeyR')) {
       irPara(novaCorrida());
     } else if (Entrada.tocou('Escape')) {
       irPara(Telas.fase());
     }
+  } else {
+    Som.motor(null); // nos menus, motor desligado
   }
   cena.atualizar(dt);
 }
@@ -77,15 +81,22 @@ function atualizar(dt) {
 function desenhar() {
   if (cena instanceof Corrida) {
     cena.desenhar(ctx, LARGURA, ALTURA, mostrarSetores);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
     ctx.font = '12px system-ui, sans-serif';
-    ctx.textAlign = 'left';
+    ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    ctx.fillText(`C: setores · R: reiniciar · Esc: sair · FPS ${Math.round(fps)}`, 12, ALTURA - 10);
+    ctx.fillText(`Espaço: drift · P: pausa · M: som · R: reiniciar · Esc: sair · C: setores · FPS ${Math.round(fps)}`, LARGURA / 2, ALTURA - 8);
   } else {
     cena.desenhar(ctx, LARGURA, ALTURA);
   }
 }
+
+// O navegador só libera o som depois de uma interação da pessoa.
+window.addEventListener('keydown', () => Som.iniciar());
+// Trocou de aba ou de janela no meio da corrida? Pausa sozinho.
+window.addEventListener('blur', () => {
+  if (cena instanceof Corrida && cena.estado !== 'resultado') cena.pausada = true;
+});
 
 irPara(Telas.inicial());
 requestAnimationFrame(quadro);
