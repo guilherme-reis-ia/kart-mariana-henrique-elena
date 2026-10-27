@@ -181,7 +181,7 @@ function telaDeEscolha({ titulo, itens, inicial = 0, alturaCartao, desenharItem,
 function fundoDeMenu(ctx, w, h, t) {
   ctx.fillStyle = Pista.COR_FORA;
   ctx.fillRect(0, 0, w, h);
-  const y0 = h - 122, alt = 72;
+  const y0 = h - 142, alt = 72;
   ctx.fillStyle = '#50555c';
   ctx.fillRect(0, y0, w, alt);
   // Zebras que "andam" para dar sensação de movimento.
