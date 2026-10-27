@@ -6,7 +6,7 @@
 //   - Velocidade é um vetor (vx, vy) em pixels por segundo.
 
 class Kart {
-  constructor({ x, y, angulo = 0, cor, inicial, nome }) {
+  constructor({ x, y, angulo = 0, cor, inicial, nome, fisica = {} }) {
     this.nome = nome;
     this.x = x;
     this.y = y;
@@ -16,7 +16,7 @@ class Kart {
     this.cor = cor;
     this.inicial = inicial;
 
-    // Valores de física. No marco 4 cada personagem terá os seus.
+    // Valores padrão de física; cada personagem troca alguns deles.
     this.aceleracao = 420;       // px/s² ao segurar o acelerador
     this.velocidadeMaxima = 360; // px/s
     this.forcaFreio = 700;       // px/s² ao frear andando para frente
@@ -24,6 +24,7 @@ class Kart {
     this.atrito = 180;           // px/s² de desaceleração sem acelerar
     this.giro = 3.0;             // rad/s de giro na velocidade de referência
     this.aderencia = 9;          // quão rápido o pneu "mata" o deslize lateral
+    Object.assign(this, fisica);
 
     // Preenchido pela pista a cada quadro (ver Pista.colidir).
     this.naGrama = false;

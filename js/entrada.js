@@ -7,9 +7,9 @@
 
 const Entrada = {
   teclas: new Set(),
-  // Teclas apertadas desde a última vez que o jogo perguntou, para ações
-  // de um toque só (ligar/desligar algo), que não devem repetir enquanto
-  // a tecla fica segurada.
+  // Teclas que acabaram de ser apertadas neste quadro, para ações de um
+  // toque só (escolher no menu, ligar/desligar algo), que não devem repetir
+  // enquanto a tecla fica segurada. O jogo esvazia isto ao fim de cada quadro.
   toques: new Set(),
 
   // Teclas que o jogo usa: impedimos o comportamento padrão delas
@@ -34,13 +34,17 @@ const Entrada = {
     return codigos.some((c) => this.teclas.has(c));
   },
 
-  // Verdadeiro uma única vez para cada toque na tecla.
-  tocou(codigo) {
-    return this.toques.delete(codigo);
+  // Verdadeiro se alguma dessas teclas foi apertada neste quadro.
+  tocou(...codigos) {
+    return codigos.some((c) => this.toques.has(c));
   },
 
-  // Traduz o teclado nos comandos que um kart entende. A IA (marco 3)
-  // vai produzir este mesmo formato de objeto, então o Kart não precisa
+  limparToques() {
+    this.toques.clear();
+  },
+
+  // Traduz o teclado nos comandos que um kart entende. A IA (ia.js)
+  // produz este mesmo formato de objeto, então o Kart não precisa
   // saber se quem o controla é uma pessoa ou o computador.
   comandos() {
     return {

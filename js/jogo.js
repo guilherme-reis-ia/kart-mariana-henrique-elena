@@ -14,13 +14,31 @@ const ALTURA = tela.height;
 
 Entrada.iniciar();
 
-let corrida;
+// O que o jogador escolheu nos menus (telas.js).
+const escolha = {
+  personagem: PERSONAGENS[0],
+  dificuldade: 'facil',
+  pista: PISTAS[0],
+};
+
+// A "cena" é o que está na tela agora: um menu ou uma corrida.
+// Os dois têm atualizar(dt) e desenhar(ctx, w, h).
+let cena;
 let mostrarSetores = false;
 
-// Por enquanto a corrida é sempre a mesma; no marco 4 os menus escolhem
-// personagem e dificuldade.
+function irPara(novaCena) {
+  cena = novaCena;
+  // A tecla que trocou de cena (ex.: Enter) não deve valer também
+  // para a cena nova.
+  Entrada.limparToques();
+}
+
 function novaCorrida() {
-  corrida = new Corrida({ dadosPista: PISTAS[0], jogador: PERSONAGENS[0], dificuldade: 'dificil' });
+  return new Corrida({
+    dadosPista: escolha.pista,
+    jogador: escolha.personagem,
+    dificuldade: escolha.dificuldade,
+  });
 }
 
 let ultimoInstante = performance.now();
@@ -38,25 +56,34 @@ function quadro(agora) {
 
   atualizar(dt);
   desenhar();
+  Entrada.limparToques();
   requestAnimationFrame(quadro);
 }
 
 function atualizar(dt) {
-  if (Entrada.tocou('KeyC')) mostrarSetores = !mostrarSetores;
-  if (Entrada.tocou('KeyR')) novaCorrida();
-  if (Entrada.tocou('Enter') && corrida.estado === 'resultado') novaCorrida();
-  corrida.atualizar(dt);
+  if (cena instanceof Corrida) {
+    if (Entrada.tocou('KeyC')) mostrarSetores = !mostrarSetores;
+    if (Entrada.tocou('KeyR') || (cena.estado === 'resultado' && Entrada.tocou('Enter'))) {
+      irPara(novaCorrida());
+    } else if (Entrada.tocou('Escape')) {
+      irPara(Telas.fase());
+    }
+  }
+  cena.atualizar(dt);
 }
 
 function desenhar() {
-  corrida.desenhar(ctx, LARGURA, ALTURA, mostrarSetores);
-
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-  ctx.font = '12px system-ui, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText(`C: setores · R: reiniciar · FPS ${Math.round(fps)}`, 12, ALTURA - 10);
+  if (cena instanceof Corrida) {
+    cena.desenhar(ctx, LARGURA, ALTURA, mostrarSetores);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(`C: setores · R: reiniciar · Esc: sair · FPS ${Math.round(fps)}`, 12, ALTURA - 10);
+  } else {
+    cena.desenhar(ctx, LARGURA, ALTURA);
+  }
 }
 
-novaCorrida();
+irPara(Telas.inicial());
 requestAnimationFrame(quadro);

@@ -18,6 +18,7 @@ class Corrida {
         cor: personagem.cor,
         inicial: personagem.inicial,
         nome: personagem.nome,
+        fisica: personagem.fisica,
       });
       // Estado de corrida de cada kart (ver atualizarVoltas e atualizarProgresso).
       k.volta = 0;
@@ -253,7 +254,7 @@ class Corrida {
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
     ctx.font = '20px system-ui, sans-serif';
-    ctx.fillText('Enter: correr de novo', largura / 2, altura - 70);
+    ctx.fillText('Enter: correr de novo  ·  Esc: escolher fase', largura / 2, altura - 70);
   }
 }
 
