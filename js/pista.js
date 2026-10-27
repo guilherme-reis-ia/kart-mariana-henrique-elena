@@ -84,8 +84,13 @@ class Pista {
   pontoEm(s) {
     s = ((s % this.comprimento) + this.comprimento) % this.comprimento;
     const am = this.amostras;
-    let i = 0;
-    while (i < am.length - 1 && am[i + 1].s <= s) i++;
+    // Busca binária: as amostras estão em ordem de s, então a cada passo
+    // descartamos metade delas (~10 passos em vez de centenas).
+    let i = 0, fim = am.length - 1;
+    while (i < fim) {
+      const meio = (i + fim + 1) >> 1;
+      if (am[meio].s <= s) i = meio; else fim = meio - 1;
+    }
     const t = (s - am[i].s) / am[i].comp;
     const b = am[(i + 1) % am.length];
     return { x: am[i].x + (b.x - am[i].x) * t, y: am[i].y + (b.y - am[i].y) * t, angulo: am[i].angulo };
@@ -232,6 +237,14 @@ class Pista {
 }
 
 Pista.COR_FORA = '#2f5d2a';
+
+// Montar uma pista (e sua imagem) leva alguns milissegundos; guardamos
+// cada uma pronta para reaproveitar quando a corrida recomeça.
+Pista.prontas = new Map();
+Pista.obter = function (dados) {
+  if (!Pista.prontas.has(dados)) Pista.prontas.set(dados, new Pista(dados));
+  return Pista.prontas.get(dados);
+};
 
 // Gerador de números "aleatórios" previsível (mulberry32): a mesma semente
 // sempre produz a mesma sequência. Math.random() não permite isso.

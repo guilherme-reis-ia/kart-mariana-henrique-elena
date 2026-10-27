@@ -6,7 +6,8 @@
 //   - Velocidade é um vetor (vx, vy) em pixels por segundo.
 
 class Kart {
-  constructor({ x, y, angulo = 0, cor, inicial }) {
+  constructor({ x, y, angulo = 0, cor, inicial, nome }) {
+    this.nome = nome;
     this.x = x;
     this.y = y;
     this.angulo = angulo;
