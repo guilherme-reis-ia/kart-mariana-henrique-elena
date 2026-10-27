@@ -14,7 +14,7 @@ const PERSONAGENS = [
     inicial: 'M',
     cor: '#e63946',
     destaque: 'Velocidade máxima',
-    fisica: { velocidadeMaxima: 382, aceleracao: 370, giro: 2.85, aderencia: 8.5 },
+    fisica: { velocidadeMaxima: 374, aceleracao: 370, giro: 2.85, aderencia: 8.5 },
     notas: { Velocidade: 5, 'Aceleração': 2, Curvas: 2 },
   },
   {
@@ -22,7 +22,7 @@ const PERSONAGENS = [
     inicial: 'H',
     cor: '#3a86ff',
     destaque: 'Aceleração',
-    fisica: { velocidadeMaxima: 354, aceleracao: 560, giro: 3.0, aderencia: 9 },
+    fisica: { velocidadeMaxima: 360, aceleracao: 560, giro: 3.0, aderencia: 9 },
     notas: { Velocidade: 3, 'Aceleração': 5, Curvas: 3 },
   },
   {
@@ -30,7 +30,7 @@ const PERSONAGENS = [
     inicial: 'E',
     cor: '#9b5de5',
     destaque: 'Controle nas curvas',
-    fisica: { velocidadeMaxima: 356, aceleracao: 400, giro: 3.45, aderencia: 12 },
+    fisica: { velocidadeMaxima: 360, aceleracao: 400, giro: 3.45, aderencia: 12 },
     notas: { Velocidade: 3, 'Aceleração': 3, Curvas: 5 },
   },
 ];

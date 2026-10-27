@@ -31,11 +31,11 @@ const Telas = {
         // Texto piscando: visível na primeira metade de cada segundo.
         if (t % 1 < 0.6) {
           ctx.font = 'bold 30px system-ui, sans-serif';
-          ctx.fillText('Aperte Enter para começar', w / 2, 470);
+          ctx.fillText('Aperte Enter para começar', w / 2, 340);
         }
         ctx.font = '16px system-ui, sans-serif';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.fillText('Setas ou WASD: dirigir  ·  R: reiniciar corrida  ·  Esc: voltar', w / 2, 540);
+        ctx.fillText('Setas ou WASD: dirigir  ·  R: reiniciar corrida  ·  Esc: voltar', w / 2, 410);
       },
     };
   },
@@ -155,7 +155,7 @@ function telaDeEscolha({ titulo, itens, inicial = 0, alturaCartao, desenharItem,
       itens.forEach((item, i) => {
         const x = (w - total) / 2 + i * (larguraCartao + espaco);
         const sel = i === selecionado;
-        ctx.fillStyle = sel ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.45)';
+        ctx.fillStyle = sel ? '#2c313c' : '#181b22';
         ctx.beginPath();
         ctx.roundRect(x, y, larguraCartao, alturaCartao, 14);
         ctx.fill();
@@ -181,7 +181,7 @@ function telaDeEscolha({ titulo, itens, inicial = 0, alturaCartao, desenharItem,
 function fundoDeMenu(ctx, w, h, t) {
   ctx.fillStyle = Pista.COR_FORA;
   ctx.fillRect(0, 0, w, h);
-  const y0 = h - 190, alt = 110;
+  const y0 = h - 122, alt = 72;
   ctx.fillStyle = '#50555c';
   ctx.fillRect(0, y0, w, alt);
   // Zebras que "andam" para dar sensação de movimento.
@@ -196,7 +196,7 @@ function fundoDeMenu(ctx, w, h, t) {
   PERSONAGENS.forEach((p, i) => {
     const velocidade = 160 + i * 35;
     const x = ((t * velocidade + i * 300) % (w + 200)) - 100;
-    const k = new Kart({ x, y: y0 + 25 + i * 30, angulo: 0, ...p });
+    const k = new Kart({ x, y: y0 + 16 + i * 20, angulo: 0, ...p });
     k.desenhar(ctx);
   });
   ctx.fillStyle = 'rgba(10, 12, 20, 0.45)';

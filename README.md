@@ -9,7 +9,8 @@ Abra o arquivo `index.html` no Chrome (duplo clique). Não precisa de servidor.
 
 ## Estado atual
 
-Em construção, por marcos. Marco 3 concluído: corrida de 3 voltas na pista
+Em construção, por marcos. Marco 4 concluído: menus para escolher piloto
+(cada um com um ponto forte), dificuldade e fase; corrida de 3 voltas na pista
 oval contra dois adversários controlados pelo computador, com contagem
 regressiva, posição ao vivo e tela de resultado. Controles: setas ou WASD;
 C mostra os setores, R reinicia, Enter corre de novo após o resultado.
