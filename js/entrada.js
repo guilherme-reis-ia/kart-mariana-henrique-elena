@@ -7,6 +7,10 @@
 
 const Entrada = {
   teclas: new Set(),
+  // Teclas apertadas desde a última vez que o jogo perguntou, para ações
+  // de um toque só (ligar/desligar algo), que não devem repetir enquanto
+  // a tecla fica segurada.
+  toques: new Set(),
 
   // Teclas que o jogo usa: impedimos o comportamento padrão delas
   // (por exemplo, as setas e o Espaço rolariam a página).
@@ -17,6 +21,7 @@ const Entrada = {
   iniciar() {
     window.addEventListener('keydown', (e) => {
       this.teclas.add(e.code);
+      if (!e.repeat) this.toques.add(e.code);
       if (this.teclasDoJogo.has(e.code)) e.preventDefault();
     });
     window.addEventListener('keyup', (e) => this.teclas.delete(e.code));
@@ -27,6 +32,11 @@ const Entrada = {
 
   apertada(...codigos) {
     return codigos.some((c) => this.teclas.has(c));
+  },
+
+  // Verdadeiro uma única vez para cada toque na tecla.
+  tocou(codigo) {
+    return this.toques.delete(codigo);
   },
 
   // Traduz o teclado nos comandos que um kart entende. A IA (marco 3)

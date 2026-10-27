@@ -23,6 +23,9 @@ class Kart {
     this.atrito = 180;           // px/s² de desaceleração sem acelerar
     this.giro = 3.0;             // rad/s de giro na velocidade de referência
     this.aderencia = 9;          // quão rápido o pneu "mata" o deslize lateral
+
+    // Preenchido pela pista a cada quadro (ver Pista.colidir).
+    this.naGrama = false;
   }
 
   // dt = tempo em segundos desde o último quadro (ver jogo.js).
@@ -37,8 +40,10 @@ class Kart {
     let lado = this.vx * lx + this.vy * ly;
 
     // 2) Motor e freio só agem na parte "frente".
+    //    Na grama o motor não passa de 45% da velocidade máxima.
+    const maxima = this.velocidadeMaxima * (this.naGrama ? 0.45 : 1);
     if (comandos.acelerar) {
-      frente += this.aceleracao * dt;
+      if (frente < maxima) frente = Math.min(maxima, frente + this.aceleracao * dt);
     } else if (comandos.frear) {
       // Andando para frente, "frear" é freio; parado ou para trás, vira ré.
       frente -= (frente > 0 ? this.forcaFreio : this.aceleracao * 0.6) * dt;
@@ -48,7 +53,10 @@ class Kart {
       const reducao = this.atrito * dt;
       frente = Math.abs(frente) <= reducao ? 0 : frente - Math.sign(frente) * reducao;
     }
-    frente = Math.max(-this.velocidadeMaximaRe, Math.min(this.velocidadeMaxima, frente));
+    // Acima do limite (ex.: entrou na grama embalado), o kart perde o
+    // excesso rápido, mas sem um tranco de uma vez.
+    if (frente > maxima) frente = maxima + (frente - maxima) * Math.exp(-3 * dt);
+    frente = Math.max(-this.velocidadeMaximaRe, frente);
 
     // 3) Aderência: os pneus resistem a andar de lado. Multiplicar por
     //    exp(-aderencia * dt) reduz o deslize sempre na mesma proporção por
@@ -139,3 +147,6 @@ class Kart {
     ctx.restore();
   }
 }
+
+// Para colisões, tratamos o kart como um círculo com este raio.
+Kart.RAIO = 14;
