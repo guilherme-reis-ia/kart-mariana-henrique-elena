@@ -166,12 +166,15 @@ class Pista {
       c.closePath();
     };
     c.lineJoin = 'round';
-    c.lineCap = 'round';
     const camada = (cor, espessura, tracejado = []) => {
       tracar();
       c.strokeStyle = cor;
       c.lineWidth = espessura;
       c.setLineDash(tracejado);
+      // Ponta arredondada estende cada traço em meia espessura da linha:
+      // numa linha grossa tracejada, isso cobriria os vãos (a zebra
+      // ficaria toda branca). Por isso só a usamos em linhas contínuas.
+      c.lineCap = tracejado.length ? 'butt' : 'round';
       c.stroke();
     };
     const larguraMuro = this.largura + 2 * this.borda;
